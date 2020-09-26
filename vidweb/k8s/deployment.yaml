@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vidweb-deployment
+  labels:
+    app: vidweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vidweb
+  template:
+    metadata:
+      labels:
+        app: vidweb
+    spec:
+      containers:
+        - name: vidweb
+          image: gcr.io/cloud-test-254814/vidweb:1.0
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            periodSeconds: 10
+            failureThreshold: 3
+          ports:
+            - containerPort: 80
+

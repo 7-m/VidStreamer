@@ -1,0 +1,476 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+
+	<title>MFD PLAYER</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="application/x-javascript">
+		window.onload = function () {
+			
+			var token_exists = localStorage.getItem('token');
+			if (token_exists != null)
+			{
+				document.getElementById("sing-up-anchor").style.visibility='hidden';
+				document.getElementById("sign-in-anchor").textContent="Logout";
+			}
+			else
+			{
+				document.getElementById("sing-up-anchor").style.visibility='visible';
+				document.getElementById("sign-in-anchor").textContent="Sign In";
+			}
+
+			const urlParams = new URLSearchParams(window.location.search);
+			const search_text = urlParams.get('search_text');
+
+			if (search_text == null)
+			{
+				var search = document.getElementById("searchtext").value;
+				var searchformatted=search.replace(/ /g, "+");
+				var theurl="/indexer/new?count=12";
+				console.log(theurl);
+				var client = new HttpClient();
+					client.get(theurl,function(response){
+							 var response1=JSON.parse(response);
+							 load_videos_data(response1);
+					});
+			}
+		}
+		addEventListener("load", function() {
+			setTimeout(hideURLbar, 0);
+		}, false);
+
+		function hideURLbar() {
+			window.scrollTo(0, 1);
+		}
+	</script>
+	<link href="web/css/bootstrap.min.css" rel='stylesheet' type='text/css' media="all" />
+	<link href="web/css/dashboard.css" rel="stylesheet">
+	<link href="web/css/style.css" rel='stylesheet' type='text/css' media="all" />
+	<link rel="shortcut icon" href="web/images/mv.ico" type="image/x-icon">
+	<script src="web/js/jquery-1.11.1.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+	<link href='//fonts.googleapis.com/css?family=Poiret+One' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="index.html">
+					<h1><img src="web/images/logo.png" alt="" /></h1>
+				</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<div class="top-search">
+					<form class="navbar-form navbar-right" id="search_form" action="video.html">
+						<input type="text" id="searchtext" class="form-control" name="search_text" placeholder="Search...">
+						<input type="submit" id="help_button" value=""/>
+					</form>
+				</div>
+				<div class="header-top-right">
+					<div class="file">
+						<a href="" onclick="return upload_func();" class="play-icon popup-with-zoom-anim" id="upload-btn">Upload</a>
+						<script type="text/javascript">
+
+							function upload_func() {
+								var token = localStorage.getItem("token");
+								if (token != null) {
+									window.open("upload.html", "_self");
+								} 
+								else
+								{
+									document.getElementById("upload-btn").setAttribute("href", "#small-dialog4");
+									return true;
+								}
+							}
+						</script>
+					</div>
+					<div id="small-dialog4" class="mfp-hide">
+						<h3>Upload</h3>
+						<div class="feedback-grids">
+							<div class="feedback-grid">
+								<p>Uploading videos is possible once you sign in. </p>
+							</div>
+							<div class="button-bottom">
+								<p><a href="#small-dialog" class="play-icon popup-with-zoom-anim">Sign in</a> to get
+									started.</p>
+							</div>
+						</div>
+					</div>
+					<div class="signin">
+						<a href="#small-dialog2" class="play-icon popup-with-zoom-anim" id="sing-up-anchor">Sign Up</a>
+						<!-- pop-up-box -->
+						<script type="text/javascript" src="web/js/modernizr.custom.min.js"></script>
+						<link href="web/css/popuo-box.css" rel="stylesheet" type="text/css" media="all" />
+						<script src="web/js/jquery.magnific-popup.js" type="text/javascript"></script>
+						<!--//pop-up-box -->
+						<div id="small-dialog2" class="mfp-hide">
+							<h3>Create Account</h3>
+							<div class="social-sits">
+								<div class="button-middle">
+									<p>Already have an account? <a href="#small-dialog" class="play-icon popup-with-zoom-anim">Login</a>
+									</p>
+								</div>
+							</div>
+							<div class="signup">
+								<form id="signing-in">
+									<input type="text" class="email" name="uname1" placeholder="Username" required="required" title="Enter a valid username" />
+									<input type="password" placeholder="Password" name="passwd1" required="required" pattern=".{6,}" title="Minimum 6 characters required" autocomplete="off" />
+									<input type="button" class="btn btn-primary" onclick="create_user_function();" value="Sign Up" />
+								</form>
+								<script type="text/javascript">
+									function create_user_function() {
+									    var request = new XMLHttpRequest()
+									    request.open("POST","/auth/register", true);
+									    request.setRequestHeader("Content-Type", "application/json");
+									    request.onreadystatechange = function () { 
+									                if (request.readyState === 4 && request.status === 200) { 
+									  
+									                    alert("User Created and now login with the same credentials.");
+									                    window.open("index.html","_self")
+									                    document.getElementById("sing-up-anchor").style.visibility='hidden';
+									  
+									                }
+									                else if (request.status === 400)
+									                {
+									                    alert("User already exists");
+									                }
+									            }; 
+									    var uname = document.forms['signing-in'].elements['uname1'].value;
+									    var passwd = document.forms['signing-in'].elements['passwd1'].value;
+									    var data = JSON.stringify({ "username": uname, "password": passwd });
+									    request.send(data);
+									}
+								</script>
+							</div>
+							<div class="clearfix"> </div>
+						</div>
+						<div id="small-dialog7" class="mfp-hide">
+							<h3>Create Account</h3>
+							<div class="social-sits">
+								<div class="button-middle">
+									<p>Already have an account? <a href="#small-dialog" class="play-icon popup-with-zoom-anim">Login</a>
+									</p>
+								</div>
+							</div>
+							<div class="signup">
+								<form action="upload.html">
+									<input type="text" class="email" placeholder="Email" required="required" pattern="([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?" title="Enter a valid email" />
+									<input type="password" placeholder="Password" required="required" pattern=".{6,}" title="Minimum 6 characters required" autocomplete="off" />
+									<input type="button" class="btn btn-primary" value="Sign In" />
+								</form>
+							</div>
+							<div class="clearfix"> </div>
+						</div>
+
+
+						<script>
+							$(document).ready(function () {
+								$('.popup-with-zoom-anim').magnificPopup({
+									type: 'inline',
+									fixedContentPos: false,
+									fixedBgPos: true,
+									overflowY: 'auto',
+									closeBtnInside: true,
+									preloader: false,
+									midClick: true,
+									removalDelay: 300,
+									mainClass: 'my-mfp-zoom-in'
+								});
+
+							});
+						</script>
+					</div>
+					<div class="signin">
+						<a href="" class="play-icon popup-with-zoom-anim" onclick = "return signin_function();" id="sign-in-anchor">Sign In</a>
+							<script type="text/javascript">
+
+								function signin_function() {
+									var token = localStorage.getItem("token");
+									if (token != null) {
+										localStorage.removeItem('token');
+										window.open("index.html","_self");
+									} 
+									else
+									{
+										document.getElementById("sign-in-anchor").setAttribute("class", "play-icon popup-with-zoom-anim");
+										document.getElementById("sign-in-anchor").setAttribute("href", "#small-dialog");
+										return true;
+									}
+								}
+							</script>
+							
+						<div id="small-dialog" class="mfp-hide">
+							
+							<h3>Login</h3>
+							<div class="social-sits">
+								<div class="button-middle">
+									<p>New account? <a href="#small-dialog2" class="play-icon popup-with-zoom-anim">Signup</a></p>
+								</div>
+							</div>
+							<div class="signup">
+								<form id="create-user">
+									<input type="text" class="email" name="uname" placeholder="Enter username" required="required" />
+									<input type="password" placeholder="Password" name="passwd" required="required" pattern=".{6,}" title="Minimum 6 characters required" autocomplete="off" />
+									<input type="button" onclick="login_function();" class="btn btn-primary" value="LOGIN" />
+								</form>
+								<script type="text/javascript">
+									function login_function() {
+    
+								    var request = new XMLHttpRequest()
+								    request.open("POST","/auth/login", true);
+								    request.setRequestHeader("Content-Type", "application/json");
+								    request.onreadystatechange = function () { 
+								                if (request.readyState === 4 && request.status === 200) { 
+
+									                    var response = JSON.parse(request.responseText);
+									                    var token = response.authorization;
+									                    alert("Login Successful");
+									                    document.getElementById("sign-in-anchor").textContent='Logout';
+									                    document.getElementById("sing-up-anchor").style.visibility='hidden';
+									                    window.open("index.html","_self");
+									                    existing_token = localStorage.getItem('token');
+									                    if (existing_token == null)
+									                    {
+									                    	localStorage.setItem('token',token);	
+									                    }
+									                    else
+									                   	{
+										                    localStorage.removeItem('token');
+										                    localStorage.setItem('token',token);
+										                }
+										            }
+
+							                else if (request.status == 400)
+							                {
+							                    alert("Check username and password");
+							                }
+								        }; 
+								    var uname = document.forms['create-user'].elements['uname'].value;
+								    var passwd = document.forms['create-user'].elements['passwd'].value;
+								    var data = JSON.stringify({ "username": uname, "password": passwd });
+								    request.send(data);
+								}
+								</script>
+							</div>
+							<div class="clearfix"> </div>
+						</div>
+					</div>
+					<div class="clearfix"> </div>
+				</div>
+			</div>
+			<div class="clearfix"> </div>
+		</div>
+	</nav>
+
+	<div class="col-sm-3 col-md-2 sidebar">
+		<div class="top-navigation">
+			<div class="t-menu">MENU</div>
+			<div class="t-img">
+				<img src="web/images/lines.png" alt="" />
+			</div>
+			<div class="clearfix"> </div>
+		</div>
+		<div class="drop-navigation drop-navigation">
+			<ul class="nav nav-sidebar">
+				<li class="active"><a href="index.html" class="home-icon"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>Home</a></li>
+				<li><a href="video.html" class="user-icon"><span class="glyphicon glyphicon-home glyphicon-blackboard"
+							aria-hidden="true"></span>Videos</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+		<div class="main-grids">
+			<div class="top-grids" id="recent_videos">
+				
+				<div class="clearfix" id="recent_clearfix"> </div>
+			</div>
+		</div>
+
+
+	<div class="clearfix"> </div>
+		<!-- footer -->
+		<div class="footer">
+			<div class="footer-grids">
+				<div class="footer-top">
+					<div class="footer-top-nav">
+						<ul>
+							<li><a href="index.html">About</a></li>
+							<li><a href="developers.html">Developers</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- //footer -->
+	</div>
+	<div class="clearfix"></div>
+
+
+	<script type="text/javascript">
+
+		var HttpClient=function() {
+			this.get = function(aUrl,aCallback){
+				var anHttpRequest=new XMLHttpRequest();
+				anHttpRequest.onreadystatechange=function() {
+					if(anHttpRequest.readyState==4 && anHttpRequest.status==200)
+						aCallback(anHttpRequest.responseText);
+				}
+				anHttpRequest.open("GET",aUrl,true);
+				anHttpRequest.send(null);
+			}
+		}
+
+		const urlParams = new URLSearchParams(window.location.search);
+		const search_text = urlParams.get('search_text');
+		if (search_text != null)
+		{
+			var searchformatted=search_text.replace(/ /g, "+");
+			var theurl="/indexer/search/"+searchformatted;
+			var client = new HttpClient();
+				client.get(theurl,function(response){
+						 var response1=JSON.parse(response);
+						 load_videos_data(response1);
+				});
+		}
+		
+
+		function load_videos_data(response1) {
+
+			document.getElementById('recent_videos').innerHTML="";
+
+			const reco = document.createElement('div');
+			reco.setAttribute('class', "recommended-info");
+			document.getElementById('recent_videos').appendChild(reco);
+			const reco_heading = document.createElement('h3');
+			reco_heading.setAttribute("id","top-heading");
+			if (search_text == null)
+				reco_heading.textContent = "Recent Videos";
+			else
+				reco_heading.textContent = "Search Results";
+			reco.appendChild(reco_heading);
+
+			const clearfix_js_create = document.createElement('div');
+			clearfix_js_create.setAttribute('class', 'clearfix');
+			clearfix_js_create.setAttribute('id', 'recent_clearfix');
+			document.getElementById('recent_videos').appendChild(clearfix_js_create);
+
+			var search_video_id = localStorage.getItem('video-id');
+
+			if (search_video_id != null)
+			{
+				localStorage.removeItem('video-id');
+			}
+			localStorage.setItem('video-id', response1.ids);
+
+			for(let i=0;i<response1.ids.length;i++)
+			{
+				var theurl="/indexer/fetch/"+response1.ids[i];
+				var client = new HttpClient();
+				client.get(theurl,function(response){
+
+						 var response2=JSON.parse(response);
+
+						 const app = document.getElementById('recent_videos');
+
+						 const clearfix_js = document.getElementById('recent_clearfix');
+						 clearfix_js.remove();
+
+						 const container = document.createElement('div');
+						 container.setAttribute('class', 'col-md-4 resent-grid recommended-grid slider-top-grids');
+
+						 app.appendChild(container);
+
+						 const container1 = document.createElement('div');
+						 container1.setAttribute('class','resent-grid-img recommended-grid-img');
+
+						 container.appendChild(container1);
+
+						 const anchor1 = document.createElement('a');
+						 const video_link = "player.html?search_string="+response2.link+"&name="+response2.name+"&id="+response1.ids[i];
+						 anchor1.setAttribute('href', video_link);
+
+						 container1.appendChild(anchor1);
+
+						 const img1 = document.createElement('img');
+						 img1.src = "web/images/t1.png";
+
+						 anchor1.appendChild(img1);
+
+						 const clck = document.createElement('div');
+						 clck.setAttribute('class', 'clck');
+
+						 const span_class = document.createElement('span');
+						 span_class.setAttribute('class', "glyphicon glyphicon-time");
+						 span_class.setAttribute('aria-hidden', "true");
+
+						 clck.appendChild(span_class);
+						 container1.appendChild(clck);
+
+						 const container2 = document.createElement('div');
+						 container2.setAttribute('class', 'resent-grid-info recommended-grid-info');
+
+						 container.appendChild(container2);
+
+						 const heading = document.createElement('h3');
+						 
+
+						 container2.appendChild(heading);
+
+						 const anchor2 = document.createElement('a');
+						 anchor2.setAttribute('class', "title title-info");
+						 anchor2.setAttribute('href', video_link);
+						 anchor2.textContent = response2.name;
+
+						 heading.appendChild(anchor2);
+
+
+						 const un_list = document.createElement('ul');
+
+						 container2.appendChild(un_list);
+						 const list = document.createElement('li');
+
+						 un_list.appendChild(list);
+
+						 const para = document.createElement('p');
+						 para.setAttribute('class', "author author-info");
+
+						 list.appendChild(para);
+
+						 const anchor3 = document.createElement('a');
+						 anchor3.setAttribute('class', 'author');
+						 anchor3.textContent = response2.uploader;
+
+						 para.appendChild(anchor3);
+
+						 const clearfix_js_create = document.createElement('div');
+						 clearfix_js_create.setAttribute('class', 'clearfix');
+						 clearfix_js_create.setAttribute('id', 'recent_clearfix');
+						 app.appendChild(clearfix_js_create);
+
+						 
+
+				});
+		}
+	}
+	</script>
+	<!-- Bootstrap core JavaScript
+    ================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="web/js/bootstrap.min.js"></script>
+	<!-- Just to make our placeholder images work. Don't actually copy the next line! -->
+</body>
+
+</html>
+

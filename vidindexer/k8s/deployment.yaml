@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vidindexer-deployment
+  labels:
+    app: vidindexer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vidindexer
+  template:
+    metadata:
+      labels:
+        app: vidindexer
+    spec:
+      containers:
+        - name: vidindexer
+          image: gcr.io/cloud-test-254814/vidindexer:1.0
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              cpu: 250m
+          readinessProbe:
+            httpGet:
+              path: /indexer/
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            periodSeconds: 10
+            failureThreshold: 3
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_PASSWORD
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_HOST

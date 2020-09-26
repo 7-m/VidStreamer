@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: fanout-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /uploader/*
+        backend:
+          serviceName: viduploader-deployment
+          servicePort: 8080
+      - path: /indexer/*
+        backend:
+          serviceName: vidindexer-deployment
+          servicePort: 8080
+      - path: /auth/*
+        backend:
+          serviceName: vidauth-deployment
+          servicePort: 8080    
+      - path: /*
+        backend:
+          serviceName: vidweb-deployment
+          servicePort: 80
+

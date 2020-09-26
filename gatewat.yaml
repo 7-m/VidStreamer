@@ -1,0 +1,59 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: all-connection-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookinfo
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - all-connection-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /auth/
+    route:
+    - destination:
+        host: vidauth-deployment
+        port:
+          number: 8080
+  - match:
+    - uri:
+        prefix: /uploader/
+    route:
+    - destination:
+        host: viduploader-deployment
+        port:
+          number: 8080
+  - match:
+    - uri:
+        prefix: /indexer/
+    route:
+    - destination:
+        host: vidindexer-deployment
+        port:
+          number: 8080
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: vidweb-deployment
+        port:
+          number: 80
+  
+

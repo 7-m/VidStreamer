@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viduploader-deployment
+  labels:
+    app: viduploader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: viduploader
+  template:
+    metadata:
+      labels:
+        app: viduploader
+    spec:
+      containers:
+        - name: viduploader
+          image: gcr.io/cloud-test-254814/viduploader:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /uploader/
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            periodSeconds: 10
+            failureThreshold: 3
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_PASSWORD
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_HOST
+            - name: PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: gcs-creds
+                  key: PROJECT_ID
+            - name: GCS_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: gcs-creds
+                  key: GCS_BUCKET_NAME
+            - name: GCS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gcs-key
+                  key: cloud-storage-key.json
+

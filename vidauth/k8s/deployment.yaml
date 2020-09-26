@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vidauth-deployment
+  labels:
+    app: vidauth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vidauth
+  template:
+    metadata:
+      labels:
+        app: vidauth
+    spec:
+      containers:
+        - name: vidauth
+          image: gcr.io/cloud-test-254814/vidauth:1.0
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /auth/
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            periodSeconds: 10
+            failureThreshold: 3
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_PASSWORD
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_HOST
